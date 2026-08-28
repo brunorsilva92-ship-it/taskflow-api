@@ -2,11 +2,63 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 
-let usuarios = [{id: 1, nome: 'admin', email: 'admin@taskflow.com', senha: '123'},];
 let proximoIdUsuario = 2;
+let usuarios = [{
+  id: 1, nome: 'admin', email: 'admin@taskflow.com', senha: '123'},
+];
+
+let tarefas = [
+    { id: 1, texto: 'Estudar Node', coluna: 'afazer', prioridade: 'alta' },
+    { id: 2, texto: 'Criar rotas Express', coluna: 'concluido', prioridade: 'alta' },
+    { id: 3, texto: 'Testar no Postman', coluna: 'concluido', prioridade: 'alta' }
+];
 
 app.get('/usuarios', (req, res) => {
     res.json(usuarios);
+});
+
+app.get('/estatisticas', (req, res) => {
+    const { coluna } = req.query;
+
+    let lista = tarefas;
+    if (coluna) {
+        lista = tarefas.filter(t => t.coluna === coluna);
+    }
+
+    const afazer = lista.filter(t => t.coluna === 'afazer').length;
+    const andamento = lista.filter(t => t.coluna === 'andamento').length;
+    const concluido = lista.filter(t => t.coluna === 'concluido').length;
+
+    const baixa = lista.filter(t => t.prioridade === 'baixa').length;
+    const media = lista.filter(t => t.prioridade === 'media').length;
+    const alta = lista.filter(t => t.prioridade === 'alta').length;
+
+    const totalPorColuna = { afazer, andamento, concluido };
+    const totalPrioridade = { baixa, media, alta };
+    const prioridade = Object.entries(totalPrioridade).sort((a, b) => b[1] - a[1])[0][0];
+
+    res.json({
+        totalTarefas: lista.length,
+        totalPorColuna,
+        totalPrioridade,
+        prioridade
+    });
+});
+
+app.get('/estatisticas/resumo', (req, res) => {
+    const total = tarefas.length;
+    const afazer = tarefas.filter(t => t.coluna === 'afazer').length;
+    const andamento = tarefas.filter(t => t.coluna === 'andamento').length;
+    const concluido = tarefas.filter(t => t.coluna === 'concluido').length;
+
+    const baixa = tarefas.filter(t => t.prioridade === 'baixa').length;
+    const media = tarefas.filter(t => t.prioridade === 'media').length;
+    const alta = tarefas.filter(t => t.prioridade === 'alta').length;
+
+    const totalPrioridade = { baixa, media, alta };
+    const prioridade = Object.entries(totalPrioridade).sort((a, b) => b[1] - a[1])[0][0];
+
+    res.json(`Você tem ${total} tarefas. ${concluido} concluída(s), ${andamento} em andamento e ${afazer} a fazer. Prioridade mais comum: ${prioridade}.`);
 });
 
 app.get('/usuarios/:id', (req, res) => {
