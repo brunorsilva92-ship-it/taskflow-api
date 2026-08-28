@@ -34,14 +34,14 @@ app.get('/estatisticas', (req, res) => {
     const alta = lista.filter(t => t.prioridade === 'alta').length;
 
     const totalPorColuna = { afazer, andamento, concluido };
-    const totalPrioridade = { baixa, media, alta };
-    const prioridade = Object.entries(totalPrioridade).sort((a, b) => b[1] - a[1])[0][0];
+    const totalPorPrioridade = { baixa, media, alta };
+    const totalColunas = Object.entries(totalPorColuna).sort((a, b) => b[1] - a[1])[0][0];
 
     res.json({
         totalTarefas: lista.length,
         totalPorColuna,
-        totalPrioridade,
-        prioridade
+        totalPorPrioridade,
+        totalColunas
     });
 });
 
