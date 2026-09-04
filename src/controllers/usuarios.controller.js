@@ -1,20 +1,13 @@
-let usuarios = [
-    { id: 1, nome: 'Bruno', email: 'brn@gmail.com' },
-    { id: 2, nome: 'Fernanda', email: 'frnd@email.com' },
-    { id: 3, nome: 'Lucas', email: 'luq@email.com' }
-];
-
-let proximoIdUsuario = 4;
+const usuarioModel = require('../models/usuarios.model');
 
 const usuariosController = {
-
     listar(req, res) {
-        res.json(usuarios);
+        res.json(usuarioModel.listar());
     },
 
     buscarPorId(req, res) {
         const id = parseInt(req.params.id);
-        const usuario = usuarios.find(u => u.id === id);
+        const usuario = usuarioModel.buscar(id);
         if (!usuario) return res.status(404).json({ erro: 'Usuário não encontrado' });
         res.json(usuario);
     },
@@ -22,34 +15,27 @@ const usuariosController = {
     criar(req, res) {
         const { nome, email } = req.body;
         if (!nome || !email) return res.status(400).json({ erro: 'Nome e email são obrigatórios' });
-        if (usuarios.find(u => u.email === email)) {
+
+        if (usuarioModel.buscarPorEmail(email)) {
             return res.status(400).json({ erro: 'Email já cadastrado' });
         }
-        const novoUsuario = {
-            id: proximoIdUsuario++,
-            nome, 
-            email
-        };
-        usuarios.push(novoUsuario);
+
+        const novoUsuario = usuarioModel.adicionar({ nome, email });
         res.status(201).json(novoUsuario);
     },
 
     atualizar(req, res) {
         const id = parseInt(req.params.id);
-        const idx = usuarios.findIndex(u => u.id === id);
-        if (idx === -1) return res.status(404).json({ erro: 'Usuário não encontrado' });
-        
-        usuarios[idx] = { ...usuarios[idx], ...req.body, id };
-        res.json(usuarios[idx]);
+        const atualizado = usuarioModel.atualizar(id, req.body);
+        if (!atualizado) return res.status(404).json({ erro: 'Usuário não encontrado' });
+        res.json(atualizado);
     },
 
     remover(req, res) {
         const id = parseInt(req.params.id);
-        const idx = usuarios.findIndex(u => u.id === id);
-        if (idx === -1) return res.status(404).json({ erro: 'Usuário não encontrado' });
-        
-        const removido = usuarios.splice(idx, 1)[0];
-        res.json({ mensagem: 'Usuário removido', usuario: removido });
+        const removido = usuarioModel.remover(id);
+        if (!removido) return res.status(404).json({ erro: 'Usuário não encontrado' });
+        res.json({ mensagem: 'Usuário removido com sucesso', usuario: removido });
     }
 };
 
