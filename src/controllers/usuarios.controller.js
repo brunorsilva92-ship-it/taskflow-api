@@ -1,4 +1,5 @@
 const usuarioModel = require('../models/usuarios.model');
+const tarefaModel = require('../models/tarefas.model');
 
 const usuariosController = {
     listar(req, res) {
@@ -33,8 +34,18 @@ const usuariosController = {
 
     remover(req, res) {
         const id = parseInt(req.params.id);
+
+        const tarefasDoUsuario = tarefaModel.listar().filter(t => t.usuarioId === id);
+
+        if (tarefasDoUsuario.length > 0) {
+            return res.status(400).json({ 
+                erro: 'Usuário possui tarefas. Remova as tarefas antes de deletar o usuário.' 
+            });
+        }
+
         const removido = usuarioModel.remover(id);
         if (!removido) return res.status(404).json({ erro: 'Usuário não encontrado' });
+
         res.json({ mensagem: 'Usuário removido com sucesso', usuario: removido });
     }
 };
