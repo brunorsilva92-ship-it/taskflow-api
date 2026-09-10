@@ -15,7 +15,6 @@ const usuariosController = {
 
     criar(req, res) {
         const { nome, email } = req.body;
-        if (!nome || !email) return res.status(400).json({ erro: 'Nome e email são obrigatórios' });
 
         if (usuarioModel.buscarPorEmail(email)) {
             return res.status(400).json({ erro: 'Email já cadastrado' });
@@ -35,8 +34,9 @@ const usuariosController = {
     remover(req, res) {
         const id = parseInt(req.params.id);
 
-        if (!usuarioModel.buscar(id))
-            return res.status(404).json({erro: 'Usuário não encontrado'});
+        if (!usuarioModel.buscar(id)) {
+            return res.status(404).json({ erro: 'Usuário não encontrado' });
+        }
 
         const tarefasDoUsuario = tarefaModel.listar().filter(t => t.usuarioId === id);
         if (tarefasDoUsuario.length > 0) {
@@ -44,8 +44,6 @@ const usuariosController = {
         }
 
         const removido = usuarioModel.remover(id);
-        if (!removido) return res.status(404).json({ erro: 'Usuário não encontrado' });
-
         res.json({ mensagem: 'Usuário removido com sucesso', usuario: removido });
     }
 };
